@@ -71,8 +71,31 @@ int init (int size, int (* compare)(void *, void *))
 }
 
 int insert (int handle, void * data)
-{}
+{	void * data_ptr;
+	LList *n, *act, *prv;
+	
+	// Verify if the handle is valid
+	if (! valid_handle(handle)) {return FALSE;}
 
+	n = (*LList) malloc(sizeof(LList));
+	if (!n) {return FALSE;}
+	n->data = data_ptr;
+
+	// Search for insertion point
+	act = control[handle].root;
+	prv = NULL;
+	while ((act != NULL) && (control[handle].compare(n->data,act->data)>0))
+	{
+		prv = act;
+		act = (LList *) act->next;
+	}
+	if (prv == NULL) { control[handle].root = n; }
+	else { prv->next = (LList *) n; } 
+	n->next = (LList *) act;
+
+	return TRUE;
+}
+//								<<<<<<<<<<--------------------||||||||||||||||
 void * search (int handle, void * data)
 { void * ret = NULL;
 
