@@ -66,6 +66,8 @@ int init (int size, int (* compare)(void *, void *))
 	control[handle].size_of_data = size;
 	control[handle].compare = compare;
 	control[handle].root = NULL;
+
+	return handle;
 }
 
 int insert (int handle, void * data)
