@@ -23,7 +23,7 @@ typedef struct sLList
 
 // Data type for Linked List control
 typedef struct sLLControl
-{	int size_of_data;
+{	int size_of_data=-1;
 	int (*compare)(void *, void *);
 	int root;
 }LLControl;
@@ -36,7 +36,7 @@ int valid_handle(int handle)
 { int ret = TRUE;
 	if (handle >= next_LL) 
 		{ret = FALSE;}
-	if (control[handle].size_of_data == NULL) 
+	if (control[handle].size_of_data == -1) 
 		{ret = FALSE;}
 	return ret;
 }
@@ -46,16 +46,14 @@ int init (int size, int (* compare)(void *, void *))
 
 	// Discovers the first free pos in the handle[]
 	for (i=0; i<next_LL; i++)
-	{	if (control[i].size_of_data == FALSE)
+	{	if (control[i].size_of_data == -1)
 		{ handle = i;
 		  break;
 		}
 	}
 	if (i == next_LL)
-	{
-		if (next_LL < MAX_LLIST)
-		{
-			handle = next_LL;
+	{	if (next_LL < MAX_LLIST)
+		{	handle = next_LL;
 			next_LL++;
 		}
 		else 
@@ -81,6 +79,9 @@ int insert (int handle, void * data)
 	if (!n) {return FALSE;}
 	n->data = data_ptr;
 
+	// Copy data to new node.
+	memcpy(data_ptr, data, control[handle].size_of_data);
+
 	// Search for insertion point
 	act = control[handle].root;
 	prv = NULL;
@@ -95,16 +96,81 @@ int insert (int handle, void * data)
 
 	return TRUE;
 }
-//								<<<<<<<<<<--------------------||||||||||||||||
-void * search (int handle, void * data)
-{ void * ret = NULL;
 
+int search (int handle, void * data)
+{ LList * act, * ret;
+  int cmp;
+
+  	// Verify if the handle is valid
+	if (! valid_handle(handle)) {return FALSE;}
+
+	act = control[handle].root;
+
+	while (act != NULL)
+	{	cmp != control[handle].compare(data, act->data);
+		if (cmp > 0) // Procede on the list
+			{	act = (LList *) act->next; }
+		else if (cmp == 0) 	// Found
+			{ 	memcpy(data, act->data, control[handle].size_of_data); 
+				return ret; 
+			}
+		else { return FALSE; } // Not on the list
+	}
 
 	return ret;
 }
 
 int remove (int handle, void * data)
-{}
+{	LList * act, * prv;
+	int cmp; ret
+
+	// Verify if the handle is valid
+	if (! valid_handle(handle)) {return FALSE;}
+
+	prv = NULL;
+	act = control[handle].root;
+
+	while (act != NULL) 
+		{	cmp = control[handle].compare(data, act->data);
+			if (cmp > 0)	// Procede on the list
+				{ 	prv = act;
+					act = (LList *) act->next; 
+				}
+			else if (cmp == 0)	//Found
+				{ 	if (prv == NULL) // First element
+						{ 	control[handle].root = (LList *) act->next;}
+					else{	prv->next = act->next;}
+					free(act->data);
+					free(act);
+					return TRUE;
+				}
+			else {return FALSE;}	// Not found
+		}
+
+	return FALSE;
+}
 
 int clean (int handle)
-{}
+{	Node * act, rem;
+
+	// Verify if the handle is valid
+	if (! valid_handle(handle)) {return FALSE;}
+
+	act = control[handle].root;
+	while (act != NULL)
+		{
+			free(act->data);
+			rem = act;
+			act = (LList *) act->next;
+			free(rem); 
+		}
+	control[handle].root = NULL;
+	control[handle].size_of_data = FALSE;
+	return TRUE;
+}
+
+
+
+
+
+
